@@ -14,6 +14,7 @@
 @property CGPoint touchPoint;
 @property UIImageView *canvas;
 @property BOOL isDrawing;
+@property NSMutableArray *points;
 @end
 
 @implementation ViewController
@@ -40,6 +41,7 @@
     self.stampView.hidden = YES;
     [self.view insertSubview:self.stampView belowSubview:self.detectionView];
     self.isDrawing = NO;
+    self.points = [NSMutableArray array];
 }
 
 - (void)didReceiveMemoryWarning
@@ -65,11 +67,39 @@
     UITouch *touch = [touches anyObject];
     self.touchPoint = [touch locationInView:self.canvas];
 
+    [self.points addObject:[NSValue valueWithCGPoint:self.touchPoint]];
 }
 
 
 - (void) nonBlockTouchesMoved:(NSSet *)touches withEvent:(UIEvent *)event{
+    UITouch *touch = [touches anyObject];
+    self.touchPoint = [touch locationInView:self.canvas];
+    [self.points addObject:[NSValue valueWithCGPoint:self.touchPoint]];
+
+}
+
+- (void) nonBlockTouchesEnded:(NSSet *)touches withEvent:(UIEvent *)event{
+    UITouch *touch = [touches anyObject];
+    self.touchPoint = [touch locationInView:self.canvas];
+
+    [self.points addObject:[NSValue valueWithCGPoint:self.touchPoint]];
+    [self fill];
+}
+
+- (void)fill {
+    CGContextRef context = UIGraphicsGetCurrentContext();
+
+    CGContextMoveToPoint(context, 最初の点x, y);
+    for (NSValue *val in self.points) {
+        //ここで この pをつかう
+        CGPoint p = [val cgpointValue];
+        CGContextAddLineToPoint(context, p.x, p.y);
+    }
+   //とじる点もやった方がいいと思う
+    CGContextAddLineToPoint(context, xxx, yyy);
     
+    CGContextSetRGBFillColor(context, (248/255.0), (222/255.0), (173/255.0), 1);
+    CGContextFillPath(context);
 
 }
 
